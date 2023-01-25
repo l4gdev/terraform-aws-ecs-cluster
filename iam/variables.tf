@@ -1,0 +1,3 @@
+variable "labels" {
+  type = any
+}
