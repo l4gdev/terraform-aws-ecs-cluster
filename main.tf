@@ -59,6 +59,3 @@ module "fsx" {
   labels        = var.labels
   vpc_id        = var.vpc_id
 }
-
-
-

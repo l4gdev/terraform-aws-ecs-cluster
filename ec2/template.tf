@@ -18,4 +18,3 @@ resource "aws_security_group_rule" "efs" {
   security_group_id        = each.value.security_group.id
   source_security_group_id = var.instance_security_group
 }
-

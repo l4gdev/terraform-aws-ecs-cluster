@@ -38,4 +38,3 @@ output "tags" {
 output "tags_with_resource_name" {
   value = local.Tags
 }
-

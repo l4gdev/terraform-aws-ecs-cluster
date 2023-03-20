@@ -28,4 +28,3 @@ resource "aws_fsx_openzfs_file_system" "fsx" {
   }
 
 }
-
