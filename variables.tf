@@ -6,10 +6,12 @@ variable "labels" {
     })
     name = string
   })
+  description = "Labels to apply to all resources"
 }
 
 variable "vpc_id" {
-  type = string
+  type        = string
+  description = "VPC ID"
 }
 
 variable "private_subnets" {
@@ -18,9 +20,10 @@ variable "private_subnets" {
 }
 
 variable "instance_key_name" {
-  type     = string
-  nullable = true
-  default  = null
+  type        = string
+  nullable    = true
+  default     = null
+  description = "Do not use, by default you should use session manager. It will be enabled by default"
 }
 
 variable "autoscaling_group_health_check_grace_period" {
@@ -30,22 +33,49 @@ variable "autoscaling_group_health_check_grace_period" {
 
 variable "ecs_optimized_image_ssm_parameter" {
   type    = string
-  default = "/aws/service/ecs/optimized-ami/amazon-linux-2/recommended/image_id"
+  default = ""
 }
-
 
 variable "instances_groups" {
   type = list(object({
-    name                       = string
-    instance_type              = string
+    name = string
+
+    instance_type = optional(string)
+    instance_requirements = optional(object({
+      allowed_instance_types = list(string) # https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/launch_template#allowed_instance_types
+      vcpu_count = optional(object({
+        min = optional(number, 1)
+        max = optional(number)
+      }))
+      memory_mib = optional(object({
+        min = optional(number, 256)
+        max = optional(number)
+      }))
+      on_demand_max_price_percentage_over_lowest_price = optional(number)
+      spot_max_price_percentage_over_lowest_price      = optional(number)
+    }), null)
+
+
     architecture               = string
     autoscaling_group_min_size = string
     autoscaling_group_max_size = string
     spot = optional(object({
-      enable = optional(bool, false)
-      price  = optional(string, null)
+      enabled   = optional(bool, false)
+      max_price = optional(string, null)
     }), {})
   }))
+
+  validation {
+    condition     = length([for instance_group in var.instances_groups : instance_group.instance_type if instance_group.instance_requirements != null]) == 0
+    error_message = "instance_type and instance_requirements are mutually exclusive"
+  }
+  validation {
+    # validate if architecture is arm64 or amd64
+    condition     = length([for instance_group in var.instances_groups : instance_group.architecture if instance_group.architecture != "arm64" && instance_group.architecture != "amd64"]) == 0
+    error_message = "architecture must be arm64 or amd64"
+  }
+
+  description = "List of instance groups to create"
 }
 
 
@@ -62,6 +92,7 @@ variable "fsx" {
       mode = string
       iops = number
   }), null) }))
+  default     = []
   description = "List of FSX file systems to create"
 }
 
@@ -73,4 +104,28 @@ variable "enable_container_insights" {
   type        = bool
   default     = false
   description = "Enable CloudWatch Container Insights for the cluster"
+}
+
+
+variable "datadog" {
+  type = object({
+    enable                      = optional(bool, false)
+    api_key_secret_manager_name = string
+    site                        = optional(string, "datadoghq.eu")
+    process_agent_enabled       = optional(bool, true)
+    logs_enable                 = optional(bool, true),
+    collect_all_logs            = optional(bool, false)
+    apm_enable                  = optional(bool, false),
+    agent_log_level             = optional(string, "ERROR")
+  })
+  default = {
+    enable                      = false
+    api_key_secret_manager_name = ""
+    site                        = "datadoghq.eu"
+    process_agent_enabled       = true
+    logs_enable                 = true
+    collect_all_logs            = false
+    apm_enable                  = false
+    agent_log_level             = "ERROR"
+  }
 }

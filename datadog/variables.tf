@@ -1,5 +1,6 @@
 variable "datadog" {
   type = object({
+    enable                      = optional(bool, false)
     api_key_secret_manager_name = string
     site                        = optional(string, "datadoghq.eu")
     process_agent_enabled       = optional(bool, true)

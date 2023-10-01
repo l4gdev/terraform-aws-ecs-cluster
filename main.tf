@@ -19,6 +19,7 @@ module "ec2" {
   depends_on = [module.fsx]
   for_each   = local.instances_groups
 
+  volume_size                                 = var.volume_size
   autoscaling_group_health_check_grace_period = var.autoscaling_group_health_check_grace_period
   autoscaling_group_max_size                  = each.value.autoscaling_group_max_size
   autoscaling_group_min_size                  = each.value.autoscaling_group_min_size
@@ -26,9 +27,10 @@ module "ec2" {
   instance_subnets                            = var.private_subnets
   instance_security_group                     = module.security_groups.security_group_id
   instance_type                               = each.value.instance_type
+  instance_requirements                       = each.value.instance_requirements
   instance_key_name                           = var.instance_key_name
   instance_iam_role                           = module.iam.iam_role
-  spot_price                                  = each.value.spot.price
+  spot                                        = each.value.spot
   ecs_optimized_image_ssm_parameter           = var.ecs_optimized_image_ssm_parameter
   ecs_cluster_name                            = aws_ecs_cluster.cluster.name
   fsx                                         = module.fsx
@@ -39,7 +41,6 @@ module "ec2" {
 locals {
   instances_groups = { for i in var.instances_groups : i.name => i }
 }
-
 
 module "iam" {
   source = "./iam"
@@ -58,4 +59,17 @@ module "fsx" {
   configuration = each.value
   labels        = var.labels
   vpc_id        = var.vpc_id
+}
+
+
+module "datadog" {
+  source           = "./datadog"
+  count            = var.datadog.enable == true ? 1 : 0
+  datadog          = var.datadog
+  ecs_cluster_name = aws_ecs_cluster.cluster.name
+}
+
+variable "volume_size" {
+  type    = number
+  default = 50
 }

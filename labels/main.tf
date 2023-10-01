@@ -23,7 +23,7 @@ locals {
     sg          = lower("${var.labels.tags.Service}-${var.labels.name}-${var.labels.tags.Environment}")
     generic     = lower("%s-${var.labels.tags.Service}-${var.labels.name}-${var.labels.tags.Environment}")
   }
-  Name = contains(keys(local.resource_names), var.resource_type) ? local.resource_names[var.resource_type] : format(local.resource_names["generic"], var.resource_type)
+  Name = replace(contains(keys(local.resource_names), var.resource_type) ? local.resource_names[var.resource_type] : format(local.resource_names["generic"], var.resource_type), "_", "-")
   Tags = merge(var.labels.tags, { "Name" : local.Name })
 }
 output "resource_names" {

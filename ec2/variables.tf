@@ -31,12 +31,30 @@ variable "instance_security_group" {
 
 variable "instance_type" {
   type        = string
-  description = "Size of frontend app"
+  description = "Allowed instance type"
 }
+
+variable "instance_requirements" {
+  type = object({
+    allowed_instance_types = list(string) # https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/launch_template#allowed_instance_types
+    vcpu_count = object({
+      min = optional(number, 1)
+      max = optional(number)
+    })
+    memory_mib = object({
+      min = number
+      max = optional(number)
+    })
+    on_demand_max_price_percentage_over_lowest_price = optional(number)
+    spot_max_price_percentage_over_lowest_price      = optional(number)
+  })
+  default = null
+}
+
 
 variable "instance_iam_role" {
   type        = string
-  description = "ECS iam role"
+  description = "Instance IAM role"
 }
 
 variable "instance_key_name" {
@@ -50,13 +68,18 @@ variable "ecs_cluster_name" {
 }
 
 variable "ecs_optimized_image_ssm_parameter" {
-  type    = string
-  default = "/aws/service/ecs/optimized-ami/amazon-linux-2/recommended/image_id"
+  type = string
 }
 
-variable "spot_price" {
-  type    = string
-  default = ""
+variable "spot" {
+  type = object({
+    enabled   = optional(bool, false)
+    max_price = optional(string, null)
+  })
+  default = {
+    enabled   = false
+    max_price = null
+  }
 }
 
 variable "instance_group_name" {

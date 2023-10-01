@@ -15,8 +15,13 @@ resource "aws_autoscaling_group" "main" {
   health_check_type         = "EC2"
   placement_group           = aws_placement_group.asg_placement.id
   depends_on                = [aws_placement_group.asg_placement]
-  launch_configuration      = aws_launch_configuration.production_launch_config.name
-  termination_policies      = ["OldestInstance"]
+
+  launch_template {
+    id      = aws_launch_template.ecs.id
+    version = "$Latest"
+  }
+
+  termination_policies = ["OldestInstance"]
 
   vpc_zone_identifier = var.instance_subnets
 
@@ -55,13 +60,14 @@ resource "aws_autoscaling_group" "main" {
 resource "aws_ecs_cluster_capacity_providers" "asg_capacity_provider" {
   cluster_name = var.ecs_cluster_name
 
-  capacity_providers = [aws_ecs_capacity_provider.asg_capacity_provider.name]
+  capacity_providers = [aws_ecs_capacity_provider.asg_capacity_provider.name, "FARGATE", "FARGATE_SPOT"]
 
   default_capacity_provider_strategy {
-    base              = 1
+    base              = 0
     weight            = 100
     capacity_provider = aws_ecs_capacity_provider.asg_capacity_provider.name
   }
+  depends_on = [aws_ecs_capacity_provider.asg_capacity_provider]
 }
 
 resource "aws_ecs_capacity_provider" "asg_capacity_provider" {
@@ -72,6 +78,9 @@ resource "aws_ecs_capacity_provider" "asg_capacity_provider" {
       status = "ENABLED"
     }
     auto_scaling_group_arn = aws_autoscaling_group.main.arn
+  }
+  lifecycle {
+    create_before_destroy = false
   }
 }
 

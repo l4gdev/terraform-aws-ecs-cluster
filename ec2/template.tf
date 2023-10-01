@@ -1,7 +1,8 @@
 locals {
-  templatefile = templatefile("${path.module}/user_data/${var.architecture}.tpl", {
+  templatefile = templatefile("${path.module}/user_data/data.tpl", {
     cluster-name = var.ecs_cluster_name
     fsx          = var.fsx
+    arch         = var.architecture
   })
 }
 

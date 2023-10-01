@@ -42,7 +42,7 @@ locals {
     "environment" : [
       {
         "name" : "DD_API_KEY",
-        "value" : data.aws_secretsmanager_secret_version.dd_api_key.secret_string["DD_API_KEY"]
+        "valueFrom" : "${data.aws_secretsmanager_secret_version.dd_api_key.arn}::DD_API_KEY"
       },
       {
         "name" : "DD_SITE",
@@ -82,7 +82,7 @@ resource "aws_ecs_task_definition" "service" {
   network_mode             = "bridge"
   requires_compatibilities = ["EC2"]
 
-  container_definitions = local.datadog_configuration
+  container_definitions = jsonencode(local.datadog_configuration)
 
   volume {
     name      = "docker_sock"
