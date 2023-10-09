@@ -8,7 +8,7 @@ resource "aws_placement_group" "asg_placement" {
 }
 
 resource "aws_autoscaling_group" "main" {
-  name                      = "${var.labels.tags.Service}-${var.labels.tags.Environment}"
+  name                      = "${var.labels.tags.Service}-${var.labels.tags.Environment}-${var.instance_group_name}-${replace(var.instance_type, ".", "-")}-${var.architecture}"
   max_size                  = var.autoscaling_group_max_size
   min_size                  = var.autoscaling_group_min_size
   health_check_grace_period = var.autoscaling_group_health_check_grace_period
