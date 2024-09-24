@@ -1,7 +1,8 @@
 resource "aws_security_group" "fsx" {
-  name   = "${var.labels.tags.Service}-${var.labels.tags.Environment}-fsx-sg"
-  vpc_id = var.vpc_id
-  tags   = var.labels.tags
+  name        = "${var.labels.tags.Service}-${var.labels.tags.Environment}-fsx-sg"
+  vpc_id      = var.vpc_id
+  tags        = var.labels.tags
+  description = "Security group for FSx"
   ingress {
     from_port   = 2049
     protocol    = "tcp"

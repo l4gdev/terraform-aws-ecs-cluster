@@ -1,5 +1,32 @@
+# ECS Cluster module that can creates ECS cluster with autoscaling groups
 
-<!-- BEGINNING OF PRE-COMMIT-TERRAFORM DOCS HOOK -->
+Example:
+```hcl
+module "ecs_cluster" {
+  source  = "registry.terraform.io/l4gdev/ecs-cluster/aws"
+  version = "1.1.1"
+
+  labels          = var.labels
+  vpc_id          = local.vpc_id
+  private_subnets = local.priv_sub
+  volume_size     = 30
+  instances_groups = [
+    {
+      name                       = "test"
+      instance_type              = "t3.large"
+      architecture               = "amd64"
+      autoscaling_group_min_size = 1
+      autoscaling_group_max_size = 10
+      spot = {
+        enabled = true
+      }
+    }
+  ]
+}
+```
+
+
+<!-- BEGIN_TF_DOCS -->
 ## Requirements
 
 | Name | Version |
@@ -54,4 +81,4 @@
 | <a name="output_cluster_name"></a> [cluster\_name](#output\_cluster\_name) | n/a |
 | <a name="output_instances_capacity_providers"></a> [instances\_capacity\_providers](#output\_instances\_capacity\_providers) | n/a |
 | <a name="output_security_group"></a> [security\_group](#output\_security\_group) | n/a |
-<!-- END OF PRE-COMMIT-TERRAFORM DOCS HOOK -->
+<!-- END_TF_DOCS -->

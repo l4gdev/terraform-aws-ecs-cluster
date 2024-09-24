@@ -9,7 +9,7 @@ locals {
 
 
 data "aws_ssm_parameter" "ami" {
-  name = var.ecs_optimized_image_ssm_parameter == "" ? lookup(local.default_ami_ssm, var.architecture) : var.ecs_optimized_image_ssm_parameter
+  name = var.ecs_optimized_image_ssm_parameter == "" ? lookup(local.default_ami_ssm, var.architecture, "") : var.ecs_optimized_image_ssm_parameter
 }
 
 variable "volume_size" {
